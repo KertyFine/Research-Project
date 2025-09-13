@@ -4,6 +4,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
 from aiogram.fsm.state import State, StatesGroup
+from aiogram.utils.keyboard import ReplyKeyboardBuilder, KeyboardButton
 
 BOT_TOKEN = "8441758015:AAEtvt2O91_t7ft1N-WU9FnLt-9IyS7YnoY"
 
@@ -11,6 +12,11 @@ logging.basicConfig(level = logging.INFO)
 
 bot = Bot(token = BOT_TOKEN)
 dp = Dispatcher()
+
+kb_builder = ReplyKeyboardBuilder()
+kb_builder.add(KeyboardButton(text = "Составить маршрут"), KeyboardButton(text = "Информация о месте"))
+kb_builder.adjust(2)
+reply_kb = kb_builder.as_markup(resize_keyboard = True)
 
 class GetPreferences(StatesGroup):
     location = State()
@@ -21,8 +27,14 @@ class GetPreferences(StatesGroup):
 
 @dp.message(Command("start"))
 async def cmd_start(message : types.Message, state : FSMContext):
-    await message.answer("Привет! Я бот для генераци маршрутов по Беларуси.\nДавайте сначала определим ваши предпочтения.\nВведите желаемую местность или город")
-    await state.set_state(GetPreferences.location)
+    await message.answer("Привет! Я бот для генераци маршрутов по Беларуси.\nДавайте сначала определим ваши предпочтения.\nВведите желаемую местность или город", reply_markup = reply_kb)
+    #await state.set_state(GetPreferences.location)
+
+@dp.message()
+async def start_getting_preferences(message : types.Message, state : FSMContext):
+    if message.text.lower() == 'составить маршрут':
+        await message.answer("Введите желаемую местность или город")
+        await state.set_state(GetPreferences.location)
 
 @dp.message(GetPreferences.location)
 async def handle_location(message : types.Message, state : FSMContext):
@@ -43,7 +55,7 @@ async def handle_duration(message : types.Message, state : FSMContext):
     await state.set_state(GetPreferences.interests)
 
 @dp.message(GetPreferences.interests)
-async def handle_duration(message : types.Message, state : FSMContext):
+async def handle_interests(message : types.Message, state : FSMContext):
     await state.update_data(interests = message.text)
     await message.answer("Какой транспорт планируете использовать?")
     await state.set_state(GetPreferences.transport)
