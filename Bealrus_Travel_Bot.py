@@ -8,6 +8,7 @@ from aiogram.utils.keyboard import ReplyKeyboardBuilder, KeyboardButton
 from aiogram.fsm.storage.memory import MemoryStorage
 from openai import OpenAI
 
+
 BOT_TOKEN = "8441758015:AAEtvt2O91_t7ft1N-WU9FnLt-9IyS7YnoY"
 
 logging.basicConfig(level = logging.INFO)
@@ -20,6 +21,7 @@ kb_builder = ReplyKeyboardBuilder()
 kb_builder.add(KeyboardButton(text = "Составить маршрут"), KeyboardButton(text = "Информация о месте"))
 kb_builder.adjust(2)
 reply_kb = kb_builder.as_markup(resize_keyboard = True)
+
 
 class GetPreferences(StatesGroup):
     location = State()
@@ -48,6 +50,7 @@ async def ask_ai(prompt):
         ]
     )
     return completion.choices[0].message.content
+
 
 @dp.message(Command("start"))
 async def cmd_start(message : types.Message, state : FSMContext):
@@ -100,6 +103,7 @@ async def handle_transport(message : types.Message, state : FSMContext):
     data = await state.get_data()
     result = await ask_ai(f"Сгенерируй маршрут по данным. Местность: {data['location']}, бюджет: {data['budget']}, длительность: {data['duration']}, пожелания: {data['interests']}, транспорт: {data['transport']}. Ответ дай сообщением 100-200 символов.")
     await message.answer(f'{result}')
+
 
 async def main():
     await dp.start_polling(bot)
